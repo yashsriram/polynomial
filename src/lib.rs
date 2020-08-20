@@ -1,38 +1,43 @@
 use std::collections::HashMap;
 use std::fmt;
 
+#[macro_export]
+macro_rules! polynomial (
+    ($($key:expr => $value:expr),*) => (
+        {
+            let mut p = polynomial::Polynomial::new();
+            $(
+                p.insert($key, $value);
+            )*
+            p
+        }
+    );
+);
+
 #[derive(Debug)]
 pub struct Polynomial {
     coeff_of_power: HashMap<i32, f32>,
 }
 
-impl Polynomial {}
-
-impl Default for Polynomial {
-    fn default() -> Self {
-        let map = {
-            let mut map = HashMap::new();
-            map.insert(2, 1.0);
-            map.insert(1, -5.0);
-            map.insert(0, 6.0);
-            map
-        };
+impl Polynomial {
+    pub fn new() -> Self {
         Polynomial {
-            coeff_of_power: map,
+            coeff_of_power: HashMap::new(),
         }
+    }
+
+    pub fn insert(&mut self, power: i32, coeff: f32) -> Option<f32> {
+        self.coeff_of_power.insert(power, coeff)
     }
 }
 
 impl fmt::Display for Polynomial {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let map = {
+        let sorted_coeff_of_power = {
             let mut map = self.coeff_of_power.iter().collect::<Vec<(&i32, &f32)>>();
             map.sort_by(|a, b| b.0.cmp(a.0));
             map
         };
-        for (power, coeff) in map.iter() {
-            write!(f, "{}x^{} ", coeff, power)?;
-        }
-        write!(f, "")
+        write!(f, "{:?}", sorted_coeff_of_power)
     }
 }
