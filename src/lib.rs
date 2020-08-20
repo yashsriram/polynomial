@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
+use std::ops::{Add, Sub};
 
 #[macro_export]
 macro_rules! polynomial (
@@ -14,7 +15,7 @@ macro_rules! polynomial (
     );
 );
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Polynomial {
     coeff_of_power: HashMap<i32, f32>,
 }
@@ -39,5 +40,41 @@ impl fmt::Display for Polynomial {
             map
         };
         write!(f, "{:?}", sorted_coeff_of_power)
+    }
+}
+
+impl Add for Polynomial {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        let mut sum = self.clone();
+        for (&power, &coeff) in other.coeff_of_power.iter() {
+            sum.insert(
+                power,
+                match sum.coeff_of_power.get(&power) {
+                    Some(&prev_coeff) => prev_coeff + coeff,
+                    None => coeff,
+                },
+            );
+        }
+        sum
+    }
+}
+
+impl Sub for Polynomial {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        let mut difference = self.clone();
+        for (&power, &coeff) in other.coeff_of_power.iter() {
+            difference.insert(
+                power,
+                match difference.coeff_of_power.get(&power) {
+                    Some(&prev_coeff) => prev_coeff - coeff,
+                    None => -coeff,
+                },
+            );
+        }
+        difference
     }
 }
