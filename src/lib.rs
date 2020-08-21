@@ -125,10 +125,11 @@ impl Mul for Polynomial {
         let mut product = Polynomial::new();
         for (&a_power, &a_coeff) in self.coeff_of_power.iter() {
             let mut term_mul = Polynomial::new();
+            // Since any term * b will result in non-overlapping terms, simple insert can be used instead of repeated polynomial addition
             for (&b_power, &b_coeff) in other.coeff_of_power.iter() {
-                // FIXME
                 term_mul.insert(a_power + b_power, a_coeff * b_coeff);
             }
+            // Here there can be overlaps and hence polynomial addition is required
             product += term_mul;
         }
         product
