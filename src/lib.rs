@@ -28,7 +28,18 @@ impl Polynomial {
     }
 
     pub fn insert(&mut self, power: i32, coeff: f32) -> Option<f32> {
+        if power < 0 {
+            panic!("Power supplied to a polynomial term is < 0.");
+        }
         self.coeff_of_power.insert(power, coeff)
+    }
+
+    pub fn at(&self, x: f32) -> f32 {
+        let mut value = 0f32;
+        for (&power, &coeff) in self.coeff_of_power.iter() {
+            value += coeff * x.powi(power);
+        }
+        value
     }
 }
 
@@ -127,6 +138,12 @@ impl Mul for Polynomial {
 #[cfg(test)]
 mod tests {
     use super::{polynomial, Polynomial};
+
+    #[test]
+    fn at() {
+        let p = polynomial! { 1 => 1.0, 2 => 5.0, 0 => 5.0, 3 => -2.0, 4 => -1.0, 5 => 1.0 };
+        assert_eq!(p.at(3.0), 161.0);
+    }
 
     #[test]
     fn add() {
