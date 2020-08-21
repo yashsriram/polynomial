@@ -38,6 +38,36 @@ impl Polynomial {
         }
         value
     }
+
+    pub fn plot(&self, l: f32, r: f32, num_samples: u32, filename: &str) -> Result<(), &str> {
+        if num_samples < 2 {
+            return Err("Requested less than 2 samples for plotting.");
+        }
+        use gnuplot::*;
+        let mut fg = Figure::new();
+        fg.axes2d()
+            .lines(
+                (0..num_samples).map(|i| l + (r - l) * (i as f32 / (num_samples - 1) as f32)),
+                (0..num_samples)
+                    .map(|i| l + (r - l) * (i as f32 / (num_samples - 1) as f32))
+                    .map(|x| self.at(x)),
+                &[],
+            )
+            .set_x_label("x", &[])
+            .set_y_label("y", &[])
+            .set_grid_options(true, &[LineStyle(SmallDot), Color("grey")])
+            .set_x_grid(true)
+            .set_y_grid(true)
+            .set_title(
+                &format!(
+                    "{}\nplotted from {} to {} with {} samples",
+                    self, l, r, num_samples
+                ),
+                &[],
+            );
+        fg.echo_to_file(&format!("{}.gnuplot", filename));
+        Ok(())
+    }
 }
 
 impl fmt::Display for Polynomial {
@@ -141,6 +171,23 @@ mod tests {
     fn at() {
         let p = polynomial! { 1 => 1.0, 2 => 5.0, 0 => 5.0, 3 => -2.0, 4 => -1.0, 5 => 1.0 };
         assert_eq!(p.at(3.0), 161.0);
+    }
+
+    #[test]
+    fn plot() {
+        let p = polynomial! { 3 => -1.0, 2 => -10.0, 1 => 10.0, 0 => 15.0 };
+        assert_eq!(p.plot(-13.0, 5.0, 50, "plot_test"), Ok(()));
+        assert_eq!(
+            p.plot(-13.0, 5.0, 1, "should_not_exist"),
+            Err("Requested less than 2 samples for plotting.")
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn plot_in_non_exisiting_dir() {
+        let p = polynomial! { 3 => -1.0, 2 => -10.0, 1 => 10.0, 0 => 15.0 };
+        assert_eq!(p.plot(-13.0, 5.0, 50, "foobar/plot_test"), Ok(()));
     }
 
     #[test]

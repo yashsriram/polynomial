@@ -5,3 +5,4 @@ authors = ["Yashasvi Sriram Patkuri <yash.3997@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+gnuplot = "0.0.37"
