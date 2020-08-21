@@ -17,7 +17,7 @@ macro_rules! polynomial (
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Polynomial {
-    coeff_of_power: HashMap<i32, f32>,
+    coeff_of_power: HashMap<u32, f32>,
 }
 
 impl Polynomial {
@@ -27,17 +27,14 @@ impl Polynomial {
         }
     }
 
-    pub fn insert(&mut self, power: i32, coeff: f32) -> Option<f32> {
-        if power < 0 {
-            panic!("Power supplied to a polynomial term is < 0.");
-        }
+    pub fn insert(&mut self, power: u32, coeff: f32) -> Option<f32> {
         self.coeff_of_power.insert(power, coeff)
     }
 
     pub fn at(&self, x: f32) -> f32 {
         let mut value = 0f32;
         for (&power, &coeff) in self.coeff_of_power.iter() {
-            value += coeff * x.powi(power);
+            value += coeff * x.powi(power as i32);
         }
         value
     }
@@ -46,7 +43,7 @@ impl Polynomial {
 impl fmt::Display for Polynomial {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let sorted_coeff_of_power = {
-            let mut map = self.coeff_of_power.iter().collect::<Vec<(&i32, &f32)>>();
+            let mut map = self.coeff_of_power.iter().collect::<Vec<(&u32, &f32)>>();
             map.sort_by(|a, b| b.0.cmp(a.0));
             map
         };
