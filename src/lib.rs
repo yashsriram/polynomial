@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::ops::{Add, AddAssign, Mul, Sub};
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 #[macro_export]
 macro_rules! polynomial (
@@ -93,6 +93,20 @@ impl Sub for Polynomial {
     }
 }
 
+impl SubAssign for Polynomial {
+    fn sub_assign(&mut self, other: Self) {
+        for (&power, &coeff) in other.coeff_of_power.iter() {
+            self.insert(
+                power,
+                match self.coeff_of_power.get(&power) {
+                    Some(&prev_coeff) => prev_coeff - coeff,
+                    None => -coeff,
+                },
+            );
+        }
+    }
+}
+
 impl Mul for Polynomial {
     type Output = Self;
 
@@ -141,6 +155,17 @@ mod tests {
         let q = polynomial! { 3 => 73.0, 2 => -118.0, 0 => 40.0 };
         assert_eq!(
             p - q,
+            polynomial! { 3 => -73.0, 2 => 175.0, 1 => 11.0, 0 => 11.0 }
+        );
+    }
+
+    #[test]
+    fn sub_assign() {
+        let mut p = polynomial! { 1 => 11.0, 2 => 57.0, 0 => 51.0 };
+        let q = polynomial! { 3 => 73.0, 2 => -118.0, 0 => 40.0 };
+        p -= q;
+        assert_eq!(
+            p,
             polynomial! { 3 => -73.0, 2 => 175.0, 1 => 11.0, 0 => 11.0 }
         );
     }
