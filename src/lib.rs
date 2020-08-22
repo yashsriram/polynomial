@@ -31,6 +31,14 @@ impl Polynomial {
         self.coeff_of_power.insert(power, coeff)
     }
 
+    pub fn degree(&self) -> Option<u32> {
+        self.coeff_of_power
+            .iter()
+            .filter(|(&_, &coeff)| coeff != 0.0)
+            .map(|(&power, &_)| power)
+            .max()
+    }
+
     pub fn at(&self, x: f32) -> f32 {
         let mut value = 0f32;
         for (&power, &coeff) in self.coeff_of_power.iter() {
@@ -208,6 +216,22 @@ impl Mul for Polynomial {
 #[cfg(test)]
 mod tests {
     use super::{polynomial, Polynomial};
+
+    #[test]
+    fn degree() {
+        assert_eq!(polynomial! { 100 => 1.0, 0 => 5.0 }.degree(), Some(100));
+        assert_eq!(
+            polynomial! { 1 => 1.0, 2 => 5.0, 0 => 5.0, 3 => -2.0, 4 => -1.0, 5 => 1.0 }.degree(),
+            Some(5)
+        );
+        assert_eq!(
+            polynomial! { 3 => -1.0, 2 => -10.0, 1 => 10.0, 0 => 15.0 }.degree(),
+            Some(3)
+        );
+        assert_eq!(polynomial! { 1 => 10.0, 0 => 15.0 }.degree(), Some(1));
+        assert_eq!(polynomial! { 0 => 15.0 }.degree(), Some(0));
+        assert_eq!(Polynomial::new().degree(), None);
+    }
 
     #[test]
     fn at() {
