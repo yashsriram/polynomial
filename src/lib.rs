@@ -78,6 +78,15 @@ impl Polynomial {
         }
         derivative_of_self
     }
+
+    pub fn integral(&self, c: f32) -> Self {
+        let mut derivative_of_self = Self::new();
+        for (&power, &coeff) in self.coeff_of_power.iter() {
+            derivative_of_self.insert(power + 1, coeff / (power + 1) as f32);
+        }
+        derivative_of_self.insert(0, c);
+        derivative_of_self
+    }
 }
 
 impl fmt::Display for Polynomial {
@@ -210,6 +219,19 @@ mod tests {
         assert_eq!(
             polynomial! { 3 => -1.0, 2 => -10.0, 1 => 10.0, 0 => 15.0 }.derivative(),
             polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }
+        );
+    }
+
+    #[test]
+    fn integral() {
+        assert_eq!(Polynomial::new().integral(-5.0), polynomial! { 0 => -5.0 });
+        assert_eq!(
+            polynomial! { 0 => 10.0 }.integral(15.0),
+            polynomial! { 1 => 10.0, 0 => 15.0 },
+        );
+        assert_eq!(
+            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.integral(15.0),
+            polynomial! { 3 => -1.0, 2 => -10.0, 1 => 10.0, 0 => 15.0 },
         );
     }
 
