@@ -1,0 +1,3 @@
+- [x] Impl Eq trait properly
+- [ ] /, roots()
+- [ ] Improve Display impl

@@ -15,7 +15,7 @@ macro_rules! polynomial (
     );
 );
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct Polynomial {
     coeff_of_power: HashMap<u32, f32>,
 }
@@ -86,6 +86,29 @@ impl Polynomial {
         }
         derivative_of_self.insert(0, c);
         derivative_of_self
+    }
+
+    fn forward_eq_ignoring_zero_coeff_powers(&self, b: &Self) -> bool {
+        for (&a_power, &a_coeff) in self.coeff_of_power.iter() {
+            if a_coeff == 0.0 {
+                continue;
+            }
+            let coeff_match = match b.coeff_of_power.get(&a_power) {
+                Some(&b_coeff) => a_coeff == b_coeff,
+                None => false,
+            };
+            if !coeff_match {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+impl PartialEq for Polynomial {
+    fn eq(&self, other: &Self) -> bool {
+        self.forward_eq_ignoring_zero_coeff_powers(other)
+            && other.forward_eq_ignoring_zero_coeff_powers(self)
     }
 }
 
@@ -232,6 +255,14 @@ mod tests {
         assert_eq!(
             polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.integral(15.0),
             polynomial! { 3 => -1.0, 2 => -10.0, 1 => 10.0, 0 => 15.0 },
+        );
+    }
+
+    #[test]
+    fn ignore_zero_coeff_for_eq() {
+        assert_eq!(
+            polynomial! { 4 => 0.0, 3 => 0.0, 2 => 0.0, 1 => 0.0 },
+            Polynomial::new(),
         );
     }
 
