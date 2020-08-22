@@ -96,6 +96,14 @@ impl Polynomial {
         derivative_of_self
     }
 
+    pub fn scale(self, scale: f32) -> Self {
+        let mut scaled = self.clone();
+        for (&_, coeff) in scaled.coeff_of_power.iter_mut() {
+            *coeff *= scale;
+        }
+        scaled
+    }
+
     fn forward_eq_ignoring_zero_coeff_powers(&self, b: &Self) -> bool {
         for (&a_power, &a_coeff) in self.coeff_of_power.iter() {
             if a_coeff == 0.0 {
@@ -279,6 +287,26 @@ mod tests {
         assert_eq!(
             polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.integral(15.0),
             polynomial! { 3 => -1.0, 2 => -10.0, 1 => 10.0, 0 => 15.0 },
+        );
+    }
+
+    #[test]
+    fn scale() {
+        assert_eq!(
+            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.scale(0.0),
+            Polynomial::new(),
+        );
+        assert_eq!(
+            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.scale(1.0),
+            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 },
+        );
+        assert_eq!(
+            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.scale(-1.0),
+            polynomial! { 2 => 3.0, 1 => 20.0, 0 => -10.0 },
+        );
+        assert_eq!(
+            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.scale(7.0),
+            polynomial! { 2 => -21.0, 1 => -140.0, 0 => 70.0 },
         );
     }
 
