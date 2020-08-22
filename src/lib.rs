@@ -68,6 +68,16 @@ impl Polynomial {
         fg.echo_to_file(&format!("{}.gnuplot", filename));
         Ok(())
     }
+
+    pub fn derivative(&self) -> Self {
+        let mut derivative_of_self = Self::new();
+        for (&power, &coeff) in self.coeff_of_power.iter() {
+            if power > 0 {
+                derivative_of_self.insert(power - 1, power as f32 * coeff);
+            }
+        }
+        derivative_of_self
+    }
 }
 
 impl fmt::Display for Polynomial {
@@ -188,6 +198,19 @@ mod tests {
     fn plot_in_non_exisiting_dir() {
         let p = polynomial! { 3 => -1.0, 2 => -10.0, 1 => 10.0, 0 => 15.0 };
         assert_eq!(p.plot(-13.0, 5.0, 50, "foobar/plot_test"), Ok(()));
+    }
+
+    #[test]
+    fn derivative() {
+        assert_eq!(polynomial! { 0 => 15.0 }.derivative(), Polynomial::new());
+        assert_eq!(
+            polynomial! { 1 => 10.0, 0 => 15.0 }.derivative(),
+            polynomial! { 0 => 10.0 }
+        );
+        assert_eq!(
+            polynomial! { 3 => -1.0, 2 => -10.0, 1 => 10.0, 0 => 15.0 }.derivative(),
+            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }
+        );
     }
 
     #[test]
