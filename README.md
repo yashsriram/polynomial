@@ -1,6 +1,6 @@
 - [x] Impl Eq trait properly
 - [x] multi plot
+- [x] Improve Display impl
 - [ ] /, %, roots()
-- [ ] Improve Display impl
 - [ ] README.md
 - [ ] examples

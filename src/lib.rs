@@ -132,7 +132,14 @@ impl fmt::Display for Polynomial {
             map.sort_by(|a, b| b.0.cmp(a.0));
             map
         };
-        write!(f, "{:?}", sorted_coeff_of_power)
+        for (&power, &coeff) in sorted_coeff_of_power {
+            if coeff < 0.0 {
+                write!(f, "{}x^{{{}}}", coeff, power)?;
+            } else {
+                write!(f, "+{}x^{{{}}}", coeff, power)?;
+            }
+        }
+        write!(f, "")
     }
 }
 
