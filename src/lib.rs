@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Mul, Rem, Sub, SubAssign};
 
 #[macro_export]
 macro_rules! polynomial (
@@ -241,6 +241,14 @@ impl Div for Polynomial {
     }
 }
 
+impl Rem for Polynomial {
+    type Output = Self;
+
+    fn rem(self, other: Self) -> Self {
+        self.clone() - (self / other.clone()) * other
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{polynomial, Polynomial};
@@ -400,5 +408,37 @@ mod tests {
         let p = polynomial! { 3 => 2.0, 2 => -5.0, 1 => -1.0, 0 => 3.0 };
         let q = Polynomial::new();
         let _ = p / q;
+    }
+
+    #[test]
+    fn rem() {
+        let p = Polynomial::new();
+        let q = polynomial! { 1 => 1.0, 0 => -2.0 };
+        assert_eq!(p % q, Polynomial::new());
+        let p = polynomial! { 2 => 1.0, 1 => -5.0, 0 => 6.0 };
+        let q = polynomial! { 1 => 1.0, 0 => -2.0 };
+        assert_eq!(p % q, Polynomial::new());
+        let p = polynomial! { 3 => 2.0, 2 => -5.0, 1 => -1.0, 0 => 3.0 };
+        let q = polynomial! { 1 => 1.0, 0 => 3.0 };
+        assert_eq!(p % q, polynomial! { 0 => -93.0});
+        let p = polynomial! { 4 => 6.0, 3 => 5.0, 1 => 4.0, 0 => -4.0 };
+        let q = polynomial! { 2 => 2.0, 1 => 1.0, 0 => -1.0 };
+        assert_eq!(p % q, polynomial! { 1 => 4.0, 0 => -3.0 });
+    }
+
+    #[test]
+    #[should_panic]
+    fn rem_with_zero_polynomial1() {
+        let p = Polynomial::new();
+        let q = Polynomial::new();
+        let _ = p % q;
+    }
+
+    #[test]
+    #[should_panic]
+    fn rem_with_zero_polynomial2() {
+        let p = polynomial! { 3 => 2.0, 2 => -5.0, 1 => -1.0, 0 => 3.0 };
+        let q = Polynomial::new();
+        let _ = p % q;
     }
 }
