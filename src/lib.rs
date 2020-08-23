@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
 #[macro_export]
 macro_rules! polynomial (
@@ -96,14 +96,6 @@ impl Polynomial {
         derivative_of_self
     }
 
-    pub fn scale(self, scale: f32) -> Self {
-        let mut scaled = self.clone();
-        for (&_, coeff) in scaled.coeff_of_power.iter_mut() {
-            *coeff *= scale;
-        }
-        scaled
-    }
-
     fn forward_eq_ignoring_zero_coeff_powers(&self, b: &Self) -> bool {
         for (&a_power, &a_coeff) in self.coeff_of_power.iter() {
             if a_coeff == 0.0 {
@@ -143,7 +135,7 @@ impl Add for Polynomial {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        let mut sum = self.clone();
+        let mut sum = self;
         for (&power, &coeff) in other.coeff_of_power.iter() {
             sum.insert(
                 power,
@@ -175,7 +167,7 @@ impl Sub for Polynomial {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
-        let mut difference = self.clone();
+        let mut difference = self;
         for (&power, &coeff) in other.coeff_of_power.iter() {
             difference.insert(
                 power,
@@ -218,6 +210,34 @@ impl Mul for Polynomial {
             product += term_mul;
         }
         product
+    }
+}
+
+impl Div for Polynomial {
+    type Output = Self;
+
+    fn div(self, divisor: Self) -> Self {
+        let divisor_degree = divisor
+            .degree()
+            .expect("Requested division with zero polynomial.");
+        let dividend_degree_opt = self.degree();
+        if let None = dividend_degree_opt {
+            return Polynomial::new();
+        }
+        let dividend_degree = dividend_degree_opt.unwrap();
+        if dividend_degree < divisor_degree {
+            return Polynomial::new();
+        }
+        let dividend_degree_coeff = self.coeff_of_power.get(&dividend_degree).unwrap();
+        let divisor_degree_coeff = divisor.coeff_of_power.get(&divisor_degree).unwrap();
+        let multiplier = polynomial! { dividend_degree - divisor_degree => dividend_degree_coeff / divisor_degree_coeff };
+        let quotient = multiplier;
+        let remaining_dividend = {
+            let mut remaining_dividend = self - quotient.clone() * divisor.clone();
+            remaining_dividend.coeff_of_power.remove(&dividend_degree);
+            remaining_dividend
+        };
+        quotient + remaining_dividend / divisor
     }
 }
 
@@ -291,26 +311,6 @@ mod tests {
     }
 
     #[test]
-    fn scale() {
-        assert_eq!(
-            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.scale(0.0),
-            Polynomial::new(),
-        );
-        assert_eq!(
-            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.scale(1.0),
-            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 },
-        );
-        assert_eq!(
-            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.scale(-1.0),
-            polynomial! { 2 => 3.0, 1 => 20.0, 0 => -10.0 },
-        );
-        assert_eq!(
-            polynomial! { 2 => -3.0, 1 => -20.0, 0 => 10.0 }.scale(7.0),
-            polynomial! { 2 => -21.0, 1 => -140.0, 0 => 70.0 },
-        );
-    }
-
-    #[test]
     fn ignore_zero_coeff_for_eq() {
         assert_eq!(
             polynomial! { 4 => 0.0, 3 => 0.0, 2 => 0.0, 1 => 0.0 },
@@ -368,5 +368,37 @@ mod tests {
             p * q,
             polynomial! { 5 => 35.0, 4 => -33.0, 3 => 27.0, 2 => -20.0, 1 => 4.0, 0 => 20.0 }
         );
+    }
+
+    #[test]
+    fn div() {
+        let p = Polynomial::new();
+        let q = polynomial! { 1 => 1.0, 0 => -2.0 };
+        assert_eq!(p / q, Polynomial::new());
+        let p = polynomial! { 2 => 1.0, 1 => -5.0, 0 => 6.0 };
+        let q = polynomial! { 1 => 1.0, 0 => -2.0 };
+        assert_eq!(p / q, polynomial! { 1 => 1.0, 0 => -3.0});
+        let p = polynomial! { 3 => 2.0, 2 => -5.0, 1 => -1.0, 0 => 3.0 };
+        let q = polynomial! { 1 => 1.0, 0 => 3.0 };
+        assert_eq!(p / q, polynomial! { 2 => 2.0, 1 => -11.0, 0 => 32.0});
+        let p = polynomial! { 4 => 6.0, 3 => 5.0, 1 => 4.0, 0 => -4.0 };
+        let q = polynomial! { 2 => 2.0, 1 => 1.0, 0 => -1.0 };
+        assert_eq!(p / q, polynomial! { 2 => 3.0, 1 => 1.0, 0 => 1.0});
+    }
+
+    #[test]
+    #[should_panic]
+    fn div_with_zero_polynomial1() {
+        let p = Polynomial::new();
+        let q = Polynomial::new();
+        let _ = p / q;
+    }
+
+    #[test]
+    #[should_panic]
+    fn div_with_zero_polynomial2() {
+        let p = polynomial! { 3 => 2.0, 2 => -5.0, 1 => -1.0, 0 => 3.0 };
+        let q = Polynomial::new();
+        let _ = p / q;
     }
 }
