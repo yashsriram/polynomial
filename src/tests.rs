@@ -109,17 +109,26 @@ mod tests {
         assert_eq!(polynomial! {100 => 1.0}.real_roots(0.001), vec![0.0]);
 
         assert_eq!(polynomial! {2 => 1.0, 0 => 1.0}.real_roots(0.001), vec![]);
+
         println!(
             "{:?}",
             polynomial! {2 => 1.0, 1 => -4.0, 0 => 4.0}.real_roots(0.001)
         );
+
         println!(
             "{:?}",
             polynomial! {3 => 1.0, 2 => -6.0, 1 => 12.0, 0 => -8.0}.real_roots(0.001)
         );
+
         println!("{:?}", polynomial! {1 => 1.0, 0 => -1.0}.real_roots(0.001));
         println!("{:?}", polynomial! {1 => 1.0, 0 => 1.0}.real_roots(0.001));
+
+        println!("{:?}", polynomial! {2 => 1.0, 1 => -1.0}.real_roots(0.001));
+        println!("{:?}", polynomial! {2 => 1.0, 1 => 1.0}.real_roots(0.001));
+
         println!("{:?}", polynomial! {3 => 1.0, 1 => -1.0}.real_roots(0.001));
+        println!("{:?}", polynomial! {5 => 1.0, 3 => -1.0}.real_roots(0.001));
+
         println!(
             "{:?}",
             polynomial! {2 => 1.0, 1 => -5.0, 0 => 6.0}.real_roots(0.001)

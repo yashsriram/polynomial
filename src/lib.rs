@@ -157,7 +157,7 @@ impl Polynomial {
 
     /// - Time complexity for general polynomial = O(L/dx); L = largest root abs value.
     /// - For zero polynomial an empty vec is returned.
-    /// - No guarantee on how many times a multiple root is returned.
+    /// - Multiple roots are returned at least once, but no guarantee on how many more times they are returned.
     pub fn real_roots(&self, dx: f32) -> Vec<f32> {
         assert!(dx > 0.0, "dx should be positive.");
         // Zero-term polynomial (zero polynomial)
