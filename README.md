@@ -2,7 +2,7 @@
 - [x] multi plot
 - [x] Improve Display impl
 - [x] No zero coeff terms in memory invariant
-- [ ] /, %, roots()
+- [x] /, %, roots()
 - [ ] Move tests to separate file and check them.
 - [ ] README.md
 - [ ] examples
