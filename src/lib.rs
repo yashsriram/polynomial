@@ -15,7 +15,7 @@ macro_rules! polynomial (
     );
 );
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Polynomial {
     coeff_of_power: HashMap<usize, f32>,
 }
@@ -27,16 +27,16 @@ impl Polynomial {
         }
     }
 
-    pub fn insert(&mut self, power: usize, coeff: f32) -> Option<f32> {
-        self.coeff_of_power.insert(power, coeff)
+    pub fn insert(&mut self, power: usize, coeff: f32) {
+        if coeff == 0.0 {
+            self.coeff_of_power.remove(&power);
+            return;
+        }
+        self.coeff_of_power.insert(power, coeff);
     }
 
     pub fn degree(&self) -> Option<usize> {
-        self.coeff_of_power
-            .iter()
-            .filter(|(&_, &coeff)| coeff != 0.0)
-            .map(|(&power, &_)| power)
-            .max()
+        self.coeff_of_power.iter().map(|(&power, &_)| power).max()
     }
 
     pub fn at(&self, x: f32) -> f32 {
@@ -99,29 +99,6 @@ impl Polynomial {
         }
         derivative_of_self.insert(0, c);
         derivative_of_self
-    }
-
-    fn forward_eq_ignoring_zero_coeff_powers(&self, b: &Self) -> bool {
-        for (&a_power, &a_coeff) in self.coeff_of_power.iter() {
-            if a_coeff == 0.0 {
-                continue;
-            }
-            let coeff_match = match b.coeff_of_power.get(&a_power) {
-                Some(&b_coeff) => a_coeff == b_coeff,
-                None => false,
-            };
-            if !coeff_match {
-                return false;
-            }
-        }
-        true
-    }
-}
-
-impl PartialEq for Polynomial {
-    fn eq(&self, other: &Self) -> bool {
-        self.forward_eq_ignoring_zero_coeff_powers(other)
-            && other.forward_eq_ignoring_zero_coeff_powers(self)
     }
 }
 
@@ -267,7 +244,10 @@ mod tests {
 
     #[test]
     fn degree() {
-        assert_eq!(polynomial! { 100 => 1.0, 0 => 5.0 }.degree(), Some(100));
+        assert_eq!(
+            polynomial! { 200 => 0.0, 100 => 1.0, 0 => 5.0 }.degree(),
+            Some(100)
+        );
         assert_eq!(
             polynomial! { 1 => 1.0, 2 => 5.0, 0 => 5.0, 3 => -2.0, 4 => -1.0, 5 => 1.0 }.degree(),
             Some(5)
