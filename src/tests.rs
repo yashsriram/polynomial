@@ -96,56 +96,100 @@ mod tests {
 
     #[test]
     fn real_roots() {
-        assert_eq!(Polynomial::new().real_roots(0.001), vec![]);
+        let dx = 0.001f32;
+        assert_eq!(Polynomial::new().real_roots(dx), vec![]);
         assert_eq!(
-            polynomial! {7 => 0.0, 1 => 0.0, 0 => 0.0}.real_roots(0.001),
+            polynomial! {7 => 0.0, 1 => 0.0, 0 => 0.0}.real_roots(dx),
             vec![]
         );
 
-        assert_eq!(polynomial! {0 => 1.0}.real_roots(0.001), vec![]);
-        assert_eq!(polynomial! {0 => 7.167}.real_roots(0.001), vec![]);
+        assert_eq!(polynomial! {0 => 1.0}.real_roots(dx), vec![]);
+        assert_eq!(polynomial! {0 => 7.167}.real_roots(dx), vec![]);
 
-        assert_eq!(polynomial! {1 => 1.0}.real_roots(0.001), vec![0.0]);
-        assert_eq!(polynomial! {100 => 1.0}.real_roots(0.001), vec![0.0]);
+        assert_eq!(polynomial! {1 => 1.0}.real_roots(dx), vec![0.0]);
+        assert_eq!(polynomial! {100 => 1.0}.real_roots(dx), vec![0.0]);
 
-        assert_eq!(polynomial! {2 => 1.0, 0 => 1.0}.real_roots(0.001), vec![]);
+        assert_eq!(polynomial! {2 => 1.0, 0 => 1.0}.real_roots(dx), vec![]);
 
-        println!(
-            "{:?}",
-            polynomial! {2 => 1.0, 1 => -4.0, 0 => 4.0}.real_roots(0.001)
+        assert!(polynomial! {2 => 1.0, 1 => -4.0, 0 => 4.0}
+            .real_roots(dx)
+            .iter()
+            .zip(vec![2.0f32, 2.0].iter())
+            .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0));
+        assert!(polynomial! {1 => 1.0, 0 => -1.0}
+            .real_roots(dx)
+            .iter()
+            .zip(vec![1.0f32].iter())
+            .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0));
+        assert!(polynomial! {1 => 1.0, 0 => 1.0}
+            .real_roots(dx)
+            .iter()
+            .zip(vec![-1.0f32].iter())
+            .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0));
+        assert!(polynomial! {2 => 1.0, 1 => -1.0}
+            .real_roots(dx)
+            .iter()
+            .zip(vec![0.0f32, 1.0].iter())
+            .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0));
+        assert!(polynomial! {2 => 1.0, 1 => 1.0}
+            .real_roots(dx)
+            .iter()
+            .zip(vec![0.0f32, -1.0].iter())
+            .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0));
+        assert!(polynomial! {3 => 1.0, 1 => -1.0}
+            .real_roots(dx)
+            .iter()
+            .zip(vec![0.0f32, 1.0, -1.0].iter())
+            .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0));
+        assert!(polynomial! {5 => 1.0, 3 => -1.0}
+            .real_roots(dx)
+            .iter()
+            .zip(vec![0.0f32, 1.0, -1.0].iter())
+            .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0));
+        assert!(polynomial! {2 => 1.0, 1 => -5.0, 0 => 6.0}
+            .real_roots(dx)
+            .iter()
+            .zip(vec![2.0f32, 3.0].iter())
+            .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0));
+        assert!(polynomial! {2 => 1.0, 1 => 5.0, 0 => 6.0}
+            .real_roots(dx)
+            .iter()
+            .zip(vec![-2.0f32, -3.0].iter())
+            .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0));
+        assert!(
+            polynomial! {4 => 1.0, 3 => -10.0, 2 => 35.0, 1 => -50.0, 0 => 24.0}
+                .real_roots(dx)
+                .iter()
+                .zip(vec![1.0f32, 2.0, 3.0, 4.0].iter())
+                .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0)
         );
-
-        println!(
-            "{:?}",
-            polynomial! {3 => 1.0, 2 => -6.0, 1 => 12.0, 0 => -8.0}.real_roots(0.001)
-        );
-
-        println!("{:?}", polynomial! {1 => 1.0, 0 => -1.0}.real_roots(0.001));
-        println!("{:?}", polynomial! {1 => 1.0, 0 => 1.0}.real_roots(0.001));
-
-        println!("{:?}", polynomial! {2 => 1.0, 1 => -1.0}.real_roots(0.001));
-        println!("{:?}", polynomial! {2 => 1.0, 1 => 1.0}.real_roots(0.001));
-
-        println!("{:?}", polynomial! {3 => 1.0, 1 => -1.0}.real_roots(0.001));
-        println!("{:?}", polynomial! {5 => 1.0, 3 => -1.0}.real_roots(0.001));
-
-        println!(
-            "{:?}",
-            polynomial! {2 => 1.0, 1 => -5.0, 0 => 6.0}.real_roots(0.001)
-        );
-        println!(
-            "{:?}",
-            polynomial! {4 => 1.0, 3 => -10.0, 2 => 35.0, 1 => -50.0, 0 => 24.0}.real_roots(0.001)
-        );
-        println!(
-            "{:?}",
+        assert!(
             polynomial! {4 => 1.0, 3 => -22.0, 2 => 152.0, 1 => -362.0, 0 => 231.0}
-                .real_roots(0.001)
+                .real_roots(dx)
+                .iter()
+                .zip(vec![1.0f32, 3.0, 7.0, 11.0].iter())
+                .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0)
         );
-        println!(
-            "{:?}",
-            polynomial! {2 => 1.0, 1 => -1100.0, 0 => 100000.0}.real_roots(0.1)
+        assert!(
+            polynomial! {4 => 1.0, 3 => -22.0, 2 => 152.0, 1 => -362.0, 0 => 231.0}
+                .real_roots(dx)
+                .iter()
+                .zip(vec![1.0f32, 3.0, 7.0, 11.0].iter())
+                .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0)
         );
+        assert!(
+            polynomial! {4 => 1.0, 3 => 6.0, 2 => -337.0, 1 => -366.0, 0 => 2016.0}
+                .real_roots(dx)
+                .iter()
+                .zip(vec![2.0f32, 16.0, -3.0, -21.0].iter())
+                .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0)
+        );
+        let dx = 0.1f32;
+        assert!(polynomial! {2 => 1.0, 1 => -1100.0, 0 => 100000.0}
+            .real_roots(dx)
+            .iter()
+            .zip(vec![100.0f32, 1000.0].iter())
+            .all(|(&estimate, &truth)| (estimate - truth).abs() < dx * 2.0));
     }
 
     #[test]
