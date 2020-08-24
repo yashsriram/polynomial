@@ -15,6 +15,7 @@ macro_rules! polynomial (
     );
 );
 
+/// Invariant: Only terms with non-zero coefficients are stored in memory.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Polynomial {
     coeff_of_power: HashMap<usize, f32>,
@@ -99,6 +100,100 @@ impl Polynomial {
         }
         derivative_of_self.insert(0, c);
         derivative_of_self
+    }
+
+    fn postive_real_roots_given_positive_degree(&self, dx: f32) -> Vec<f32> {
+        let derivatives = {
+            let degree = self
+                .degree()
+                .expect("Zero polynomial provided. Please provide postive degree polynomial.");
+            assert!(
+                degree > 0,
+                "Zero degree polynomial provided. Please provide postive degree polynomial."
+            );
+            let mut derivatives = Vec::<Polynomial>::with_capacity(degree);
+            derivatives.push(self.derivative());
+            for i in 1..degree {
+                derivatives.push(derivatives[i - 1].derivative());
+            }
+            derivatives
+        };
+        fn do_continue(original: &Polynomial, derivatives: &[Polynomial], x: f32) -> bool {
+            let all_derivatives_positive = derivatives.iter().all(|der| der.at(x) > 0.0);
+            if original.at(x) > 0.0 && all_derivatives_positive {
+                // Always increasing
+                return false;
+            }
+            let all_derivatives_negative = derivatives.iter().all(|der| der.at(x) < 0.0);
+            if original.at(x) < 0.0 && all_derivatives_negative {
+                // Always decreasing
+                return false;
+            }
+            true
+        }
+        let mut roots = Vec::new();
+        let mut x = dx;
+        let mut prev_val;
+        while do_continue(self, &derivatives, x) {
+            prev_val = self.at(x);
+            x += dx;
+            if self.at(x) * prev_val <= 0.0 {
+                roots.push(x);
+            }
+        }
+        roots
+    }
+
+    fn reflect_about_y_axis(&self) -> Self {
+        let mut reflection = self.clone();
+        for (power, coeff) in reflection.coeff_of_power.iter_mut() {
+            if power % 2 == 1 {
+                *coeff = -*coeff;
+            }
+        }
+        reflection
+    }
+
+    /// - Time complexity for general polynomial = O(L/dx); L = largest root abs value.
+    /// - For zero polynomial an empty vec is returned.
+    /// - No guarantee on how many times a multiple root is returned.
+    pub fn real_roots(&self, dx: f32) -> Vec<f32> {
+        assert!(dx > 0.0, "dx should be positive.");
+        // Zero-term polynomial (zero polynomial)
+        if self.coeff_of_power.len() == 0 {
+            return vec![];
+        }
+        // One-term polynomial
+        if self.coeff_of_power.len() == 1 {
+            match self.coeff_of_power.iter().next() {
+                Some((&power, &_)) => {
+                    if power == 0 {
+                        return vec![];
+                    } else {
+                        return vec![0.0];
+                    }
+                }
+                None => (),
+            }
+        }
+        // Multiple-term polynomial
+        // Zero as a root
+        let mut roots = Vec::new();
+        if self.at(0.0) == 0.0 {
+            roots.push(0.0);
+        }
+        // Positive roots
+        let positive_roots = self.postive_real_roots_given_positive_degree(dx);
+        roots.extend(positive_roots);
+        // Negative roots
+        let negative_roots = self
+            .reflect_about_y_axis()
+            .postive_real_roots_given_positive_degree(dx)
+            .iter()
+            .map(|root| -root)
+            .collect::<Vec<f32>>();
+        roots.extend(negative_roots);
+        roots
     }
 }
 
@@ -319,10 +414,80 @@ mod tests {
     }
 
     #[test]
+    fn reflect_about_y_axis() {
+        assert_eq!(Polynomial::new().reflect_about_y_axis(), Polynomial::new());
+        assert_eq!(
+            polynomial! { 0 => 10.0 }.reflect_about_y_axis(),
+            polynomial! { 0 => 10.0 },
+        );
+        assert_eq!(
+            polynomial! { 3 => 2.0, 2 => -3.0, 1 => -17.0, 0 => 6.0 }.reflect_about_y_axis(),
+            polynomial! { 3 => -2.0, 2 => -3.0, 1 => 17.0, 0 => 6.0 },
+        );
+    }
+
+    #[test]
+    fn real_roots() {
+        assert_eq!(Polynomial::new().real_roots(0.001), vec![]);
+        assert_eq!(
+            polynomial! {7 => 0.0, 1 => 0.0, 0 => 0.0}.real_roots(0.001),
+            vec![]
+        );
+
+        assert_eq!(polynomial! {0 => 1.0}.real_roots(0.001), vec![]);
+        assert_eq!(polynomial! {0 => 7.167}.real_roots(0.001), vec![]);
+
+        assert_eq!(polynomial! {1 => 1.0}.real_roots(0.001), vec![0.0]);
+        assert_eq!(polynomial! {100 => 1.0}.real_roots(0.001), vec![0.0]);
+
+        assert_eq!(polynomial! {2 => 1.0, 0 => 1.0}.real_roots(0.001), vec![]);
+        println!(
+            "{:?}",
+            polynomial! {2 => 1.0, 1 => -4.0, 0 => 4.0}.real_roots(0.001)
+        );
+        println!(
+            "{:?}",
+            polynomial! {3 => 1.0, 2 => -6.0, 1 => 12.0, 0 => -8.0}.real_roots(0.001)
+        );
+        println!("{:?}", polynomial! {1 => 1.0, 0 => -1.0}.real_roots(0.001));
+        println!("{:?}", polynomial! {1 => 1.0, 0 => 1.0}.real_roots(0.001));
+        println!("{:?}", polynomial! {3 => 1.0, 1 => -1.0}.real_roots(0.001));
+        println!(
+            "{:?}",
+            polynomial! {2 => 1.0, 1 => -5.0, 0 => 6.0}.real_roots(0.001)
+        );
+        println!(
+            "{:?}",
+            polynomial! {4 => 1.0, 3 => -10.0, 2 => 35.0, 1 => -50.0, 0 => 24.0}.real_roots(0.001)
+        );
+        println!(
+            "{:?}",
+            polynomial! {4 => 1.0, 3 => -22.0, 2 => 152.0, 1 => -362.0, 0 => 231.0}
+                .real_roots(0.001)
+        );
+        println!(
+            "{:?}",
+            polynomial! {2 => 1.0, 1 => -1100.0, 0 => 100000.0}.real_roots(0.1)
+        );
+    }
+
+    #[test]
     fn ignore_zero_coeff_for_eq() {
         assert_eq!(
             polynomial! { 4 => 0.0, 3 => 0.0, 2 => 0.0, 1 => 0.0 },
             Polynomial::new(),
+        );
+        assert_eq!(
+            Polynomial::new(),
+            polynomial! { 4 => 0.0, 3 => 0.0, 2 => 0.0, 1 => 0.0 },
+        );
+        assert_eq!(
+            polynomial! { 4 => 1.0, 2 => -3.0},
+            polynomial! { 4 => 1.0, 3 => 0.0, 2 => -3.0, 1 => 0.0 },
+        );
+        assert_eq!(
+            polynomial! { 4 => 1.0, 3 => 0.0, 2 => -3.0, 1 => 0.0 },
+            polynomial! { 4 => 1.0, 2 => -3.0},
         );
     }
 

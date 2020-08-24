@@ -1,6 +1,9 @@
 - [x] Impl Eq trait properly
 - [x] multi plot
 - [x] Improve Display impl
+- [x] No zero coeff terms in memory invariant
 - [ ] /, %, roots()
+- [ ] Move tests to separate file and check them.
 - [ ] README.md
 - [ ] examples
+- [ ] Better root finding using descartes rule and variable dx as future work.
