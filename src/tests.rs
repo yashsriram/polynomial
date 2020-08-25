@@ -217,7 +217,7 @@ mod tests {
         let p = polynomial! { 5 => 1.0, 1 => 11.0, 2 => 57.0, 0 => 51.0 };
         let q = polynomial! { 7 => 0.0, 5 => -1.0, 3 => 73.0, 2 => -118.0, 0 => 40.0 };
         assert_eq!(
-            p + q,
+            &p + &q,
             polynomial! { 3 => 73.0, 2 => -61.0, 1 => 11.0, 0 => 91.0 }
         );
     }
@@ -226,7 +226,7 @@ mod tests {
     fn add_assign() {
         let mut p = polynomial! { 8 => 0.0, 6 => 1.1, 1 => 11.0, 2 => 57.0, 0 => 51.0 };
         let q = polynomial! { 6 => -1.1, 3 => 73.0, 2 => -118.0, 0 => 40.0 };
-        p += q;
+        p += &q;
         assert_eq!(
             p,
             polynomial! { 3 => 73.0, 2 => -61.0, 1 => 11.0, 0 => 91.0 }
@@ -238,7 +238,7 @@ mod tests {
         let p = polynomial! { 5 => 300.0, 1 => 11.0, 2 => 57.0, 0 => 51.0 };
         let q = polynomial! { 5 => 300.0, 3 => 73.0, 2 => -118.0, 0 => 40.0 };
         assert_eq!(
-            p - q,
+            &p - &q,
             polynomial! { 3 => -73.0, 2 => 175.0, 1 => 11.0, 0 => 11.0 }
         );
     }
@@ -247,7 +247,7 @@ mod tests {
     fn sub_assign() {
         let mut p = polynomial! { 5 => 300.0,  1 => 11.0, 2 => 57.0, 0 => 51.0 };
         let q = polynomial! { 5 => 300.0,  3 => 73.0, 2 => -118.0, 0 => 40.0 };
-        p -= q;
+        p -= &q;
         assert_eq!(
             p,
             polynomial! { 3 => -73.0, 2 => 175.0, 1 => 11.0, 0 => 11.0 }
@@ -259,7 +259,7 @@ mod tests {
         let p = polynomial! { 6 => 0.0, 1 => 1.0, 2 => 5.0, 0 => 5.0 };
         let q = polynomial! { 5 => 0.0, 3 => 7.0, 2 => -8.0, 0 => 4.0 };
         assert_eq!(
-            p * q,
+            &p * &q,
             polynomial! { 5 => 35.0, 4 => -33.0, 3 => 27.0, 2 => -20.0, 1 => 4.0, 0 => 20.0 }
         );
     }
@@ -268,16 +268,16 @@ mod tests {
     fn div() {
         let p = Polynomial::new();
         let q = polynomial! { 1 => 1.0, 0 => -2.0 };
-        assert_eq!(p / q, Polynomial::new());
+        assert_eq!(&p / &q, Polynomial::new());
         let p = polynomial! { 2 => 1.0, 1 => -5.0, 0 => 6.0 };
         let q = polynomial! { 6 => 0.0, 1 => 1.0, 0 => -2.0 };
-        assert_eq!(p / q, polynomial! { 1 => 1.0, 0 => -3.0});
+        assert_eq!(&p / &q, polynomial! { 1 => 1.0, 0 => -3.0});
         let p = polynomial! { 6 => 0.0, 3 => 2.0, 2 => -5.0, 1 => -1.0, 0 => 3.0 };
         let q = polynomial! { 1 => 1.0, 0 => 3.0 };
-        assert_eq!(p / q, polynomial! { 2 => 2.0, 1 => -11.0, 0 => 32.0});
+        assert_eq!(&p / &q, polynomial! { 2 => 2.0, 1 => -11.0, 0 => 32.0});
         let p = polynomial! { 4 => 6.0, 3 => 5.0, 1 => 4.0, 0 => -4.0 };
         let q = polynomial! { 6 => 0.0, 2 => 2.0, 1 => 1.0, 0 => -1.0 };
-        assert_eq!(p / q, polynomial! { 2 => 3.0, 1 => 1.0, 0 => 1.0});
+        assert_eq!(&p / &q, polynomial! { 2 => 3.0, 1 => 1.0, 0 => 1.0});
     }
 
     #[test]
@@ -285,7 +285,7 @@ mod tests {
     fn div_with_zero_polynomial1() {
         let p = Polynomial::new();
         let q = Polynomial::new();
-        let _ = p / q;
+        let _ = &p / &q;
     }
 
     #[test]
@@ -293,23 +293,23 @@ mod tests {
     fn div_with_zero_polynomial2() {
         let p = polynomial! { 6 => 0.0, 3 => 2.0, 2 => -5.0, 1 => -1.0, 0 => 3.0 };
         let q = Polynomial::new();
-        let _ = p / q;
+        let _ = &p / &q;
     }
 
     #[test]
     fn rem() {
         let p = Polynomial::new();
         let q = polynomial! { 1 => 1.0, 0 => -2.0 };
-        assert_eq!(p % q, Polynomial::new());
+        assert_eq!(&p % &q, Polynomial::new());
         let p = polynomial! { 2 => 1.0, 1 => -5.0, 0 => 6.0 };
         let q = polynomial! { 6 => 0.0, 1 => 1.0, 0 => -2.0 };
-        assert_eq!(p % q, Polynomial::new());
+        assert_eq!(&p % &q, Polynomial::new());
         let p = polynomial! { 6 => 0.0, 3 => 2.0, 2 => -5.0, 1 => -1.0, 0 => 3.0 };
         let q = polynomial! { 1 => 1.0, 0 => 3.0 };
-        assert_eq!(p % q, polynomial! { 0 => -93.0});
+        assert_eq!(&p % &q, polynomial! { 0 => -93.0});
         let p = polynomial! { 4 => 6.0, 3 => 5.0, 1 => 4.0, 0 => -4.0 };
         let q = polynomial! { 6 => 0.0, 2 => 2.0, 1 => 1.0, 0 => -1.0 };
-        assert_eq!(p % q, polynomial! { 1 => 4.0, 0 => -3.0 });
+        assert_eq!(&p % &q, polynomial! { 1 => 4.0, 0 => -3.0 });
     }
 
     #[test]
@@ -317,7 +317,7 @@ mod tests {
     fn rem_with_zero_polynomial1() {
         let p = Polynomial::new();
         let q = Polynomial::new();
-        let _ = p % q;
+        let _ = &p % &q;
     }
 
     #[test]
@@ -325,6 +325,6 @@ mod tests {
     fn rem_with_zero_polynomial2() {
         let p = polynomial! { 6 => 0.0, 3 => 2.0, 2 => -5.0, 1 => -1.0, 0 => 3.0 };
         let q = Polynomial::new();
-        let _ = p % q;
+        let _ = &p % &q;
     }
 }

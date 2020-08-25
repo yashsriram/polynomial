@@ -3,7 +3,8 @@
 - [x] Improve Display impl
 - [x] No zero coeff terms in memory invariant
 - [x] /, %, roots()
-- [ ] Move tests to separate file and check them.
-- [ ] README.md
+- [x] Move tests to separate file and check them.
+- [x] Make operators borrow instead of taking ownership.
 - [ ] examples
+- [ ] README.md
 - [ ] Better root finding using descartes rule and variable dx as future work.

@@ -216,11 +216,11 @@ impl fmt::Display for Polynomial {
     }
 }
 
-impl Add for Polynomial {
-    type Output = Self;
+impl<'a, 'b> Add<&'b Polynomial> for &'a Polynomial {
+    type Output = Polynomial;
 
-    fn add(self, other: Self) -> Self {
-        let mut sum = self;
+    fn add(self, other: &'b Polynomial) -> Polynomial {
+        let mut sum = self.clone();
         for (&power, &coeff) in other.coeff_of_power.iter() {
             sum.insert(
                 power,
@@ -234,8 +234,8 @@ impl Add for Polynomial {
     }
 }
 
-impl AddAssign for Polynomial {
-    fn add_assign(&mut self, other: Self) {
+impl<'b> AddAssign<&'b Polynomial> for Polynomial {
+    fn add_assign(&mut self, other: &'b Polynomial) {
         for (&power, &coeff) in other.coeff_of_power.iter() {
             self.insert(
                 power,
@@ -248,11 +248,11 @@ impl AddAssign for Polynomial {
     }
 }
 
-impl Sub for Polynomial {
-    type Output = Self;
+impl<'a, 'b> Sub<&'b Polynomial> for &'a Polynomial {
+    type Output = Polynomial;
 
-    fn sub(self, other: Self) -> Self {
-        let mut difference = self;
+    fn sub(self, other: &'b Polynomial) -> Polynomial {
+        let mut difference = self.clone();
         for (&power, &coeff) in other.coeff_of_power.iter() {
             difference.insert(
                 power,
@@ -266,8 +266,8 @@ impl Sub for Polynomial {
     }
 }
 
-impl SubAssign for Polynomial {
-    fn sub_assign(&mut self, other: Self) {
+impl<'b> SubAssign<&'b Polynomial> for Polynomial {
+    fn sub_assign(&mut self, other: &'b Polynomial) {
         for (&power, &coeff) in other.coeff_of_power.iter() {
             self.insert(
                 power,
@@ -280,10 +280,10 @@ impl SubAssign for Polynomial {
     }
 }
 
-impl Mul for Polynomial {
-    type Output = Self;
+impl<'a, 'b> Mul<&'b Polynomial> for &'a Polynomial {
+    type Output = Polynomial;
 
-    fn mul(self, other: Self) -> Self {
+    fn mul(self, other: &'b Polynomial) -> Polynomial {
         let mut product = Polynomial::new();
         for (&a_power, &a_coeff) in self.coeff_of_power.iter() {
             let mut term_mul = Polynomial::new();
@@ -292,16 +292,16 @@ impl Mul for Polynomial {
                 term_mul.insert(a_power + b_power, a_coeff * b_coeff);
             }
             // Here there can be overlaps and hence polynomial addition is required
-            product += term_mul;
+            product += &term_mul;
         }
         product
     }
 }
 
-impl Div for Polynomial {
-    type Output = Self;
+impl<'a, 'b> Div<&'b Polynomial> for &'a Polynomial {
+    type Output = Polynomial;
 
-    fn div(self, divisor: Self) -> Self {
+    fn div(self, divisor: &'b Polynomial) -> Polynomial {
         let divisor_degree = divisor
             .degree()
             .expect("Requested division with zero polynomial.");
@@ -315,21 +315,20 @@ impl Div for Polynomial {
         }
         let dividend_degree_coeff = self.coeff_of_power.get(&dividend_degree).unwrap();
         let divisor_degree_coeff = divisor.coeff_of_power.get(&divisor_degree).unwrap();
-        let multiplier = polynomial! { dividend_degree - divisor_degree => dividend_degree_coeff / divisor_degree_coeff };
-        let quotient = multiplier;
+        let quotient = polynomial! { dividend_degree - divisor_degree => dividend_degree_coeff / divisor_degree_coeff };
         let remaining_dividend = {
-            let mut remaining_dividend = self - quotient.clone() * divisor.clone();
+            let mut remaining_dividend = self - &(&quotient * &divisor);
             remaining_dividend.coeff_of_power.remove(&dividend_degree);
             remaining_dividend
         };
-        quotient + remaining_dividend / divisor
+        &quotient + &(&remaining_dividend / divisor)
     }
 }
 
-impl Rem for Polynomial {
-    type Output = Self;
+impl<'a, 'b> Rem<&'b Polynomial> for &'a Polynomial {
+    type Output = Polynomial;
 
-    fn rem(self, other: Self) -> Self {
-        self.clone() - (self / other.clone()) * other
+    fn rem(self, other: &'b Polynomial) -> Polynomial {
+        self - &(&(self / other) * &other)
     }
 }
