@@ -5,6 +5,6 @@
 - [x] /, %, roots()
 - [x] Move tests to separate file and check them.
 - [x] Make operators borrow instead of taking ownership.
-- [ ] examples
+- [x] examples
 - [ ] README.md
 - [ ] Better root finding using descartes rule and variable dx as future work.
